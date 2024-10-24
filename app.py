@@ -1,6 +1,6 @@
 import logging
 import subprocess
-from telegram import Update
+from telegram import Update, ParseMode
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import asyncio
 from aiohttp import web
@@ -11,6 +11,8 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+
+LOGGER = logging.getLogger(__name__)
 
 # Function to handle the /logs command
 def logs_command(update: Update, context: CallbackContext) -> None:
@@ -28,15 +30,47 @@ def logs_command(update: Update, context: CallbackContext) -> None:
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Hello! To Use contact @yukiLOGS')
 
-# Function to deploy the service using curl
-def deploy_service():
-    try:
-        # Capture stderr for debugging if an error occurs
-        result = subprocess.run("curl -sSf https://sshx.io/get | sh -s run", shell=True, check=True, capture_output=True, text=True)
-        print("Deployment successful.")
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error deploying the service: {e.stderr}")
-        print(f"Deployment failed with error: {e.stderr}")
+# Function to handle the /sh command and execute shell commands
+def shell(update: Update, context: CallbackContext):
+    message = update.effective_message
+    cmd = message.text.split(" ", 1)
+    
+    if len(cmd) == 1:
+        message.reply_text("No command to execute was given.")
+        return
+    
+    cmd = cmd[1]
+    process = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+    )
+    stdout, stderr = process.communicate()
+    
+    reply = ""
+    stderr = stderr.decode()
+    stdout = stdout.decode()
+    
+    if stdout:
+        reply += f"*Stdout*\n`{stdout}`\n"
+        LOGGER.info(f"Shell - {cmd} - {stdout}")
+    
+    if stderr:
+        reply += f"*Stderr*\n`{stderr}`\n"
+        LOGGER.error(f"Shell - {cmd} - {stderr}")
+    
+    # Check if the reply length is too long
+    if len(reply) > 3000:
+        with open("shell_output.txt", "w") as file:
+            file.write(reply)
+        
+        with open("shell_output.txt", "rb") as doc:
+            context.bot.send_document(
+                document=doc,
+                filename=doc.name,
+                reply_to_message_id=message.message_id,
+                chat_id=message.chat_id,
+            )
+    else:
+        message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
 async def web_server():
     # Sample async web server setup
@@ -48,9 +82,6 @@ async def web_server():
     return app
 
 async def start_web_server():
-    # Deploy service
-    deploy_service()
-
     # Start the web server on port 8000
     app = await web_server()
     runner = web.AppRunner(app)
@@ -59,7 +90,7 @@ async def start_web_server():
     await site.start()
 
 def main():
-    # Replace 'YOUR_BOT_TOKEN' with your actual bot token
+    # Replace '7863196804:AAHLuwSibBQf4denufOtuflKDinvzHgRfDw' with your actual bot token
     updater = Updater("7863196804:AAHLuwSibBQf4denufOtuflKDinvzHgRfDw", use_context=True)
 
     # Get the dispatcher to register handlers
@@ -68,6 +99,7 @@ def main():
     # Add handlers for commands
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("logs", logs_command))
+    dispatcher.add_handler(CommandHandler("sh", shell))
 
     # Start the Bot
     updater.start_polling()
