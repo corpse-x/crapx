@@ -1,53 +1,82 @@
-from flask import Flask
+import logging
 import subprocess
-import threading
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
+import asyncio
+from aiohttp import web
 
-app = Flask(__name__)
+# Configure logging
+logging.basicConfig(
+    filename='logs.txt',  # Log output file
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 
-# File to store command logs
-LOG_FILE = "command_logs.txt"
-
-def install_and_run_command():
+# Function to handle the /logs command
+def logs_command(update: Update, context: CallbackContext) -> None:
     try:
-        # Command to install and run
-        command = "curl -sSf https://sshx.io/get | sh -s run"
-        
-        # Execute the command and save logs to a file
-        with open(LOG_FILE, "w") as log_file:
-            log_file.write("Installing and running the command...\n")
-            
-            # Run the command asynchronously and capture output
-            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            stdout, stderr = process.communicate()
-
-            # Write command outputs to the log file
-            if process.returncode == 0:
-                log_file.write(f"Command executed successfully:\n{stdout}")
-            else:
-                log_file.write(f"Command failed with errors:\n{stderr}")
-    
-    except Exception as e:
-        # Handle any unexpected exceptions
-        with open(LOG_FILE, "a") as log_file:
-            log_file.write(f"An error occurred: {str(e)}")
-
-# Run the command in a separate thread during startup
-threading.Thread(target=install_and_run_command).start()
-
-@app.route('/')
-def home():
-    return "SSH command runner is deployed. Access /logs to see the installation logs."
-
-@app.route('/logs', methods=['GET'])
-def show_logs():
-    # Read the log file and display its content
-    try:
-        with open(LOG_FILE, "r") as log_file:
+        with open('logs.txt', 'r') as log_file:
             logs = log_file.read()
-        return f"<pre>{logs}</pre>"
-    except FileNotFoundError:
-        return "Log file not found. Command might not have been executed yet."
 
-if __name__ == "__main__":
-    # Start the Flask server
-    app.run(host="0.0.0.0", port=8000)
+        # Send logs in code block format
+        update.message.reply_text(f'```logs\n{logs}\n```', parse_mode='MarkdownV2')
+
+    except FileNotFoundError:
+        update.message.reply_text('No logs found.')
+
+# Function to handle the start command
+def start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text('Hello! To Use contact @yukiLOGS')
+
+# Function to deploy the service using curl
+def deploy_service():
+    try:
+        # Run the curl command to deploy
+        subprocess.run(["curl", "-sSf", "https://sshx.io/get", "|", "sh", "-s", "run"], check=True)
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error deploying the service: {e}")
+        print("Deployment failed.")
+
+async def web_server():
+    # Sample async web server setup
+    async def handle(request):
+        return web.Response(text="Web server is running!")
+
+    app = web.Application()
+    app.add_routes([web.get('/', handle)])
+    return app
+
+async def start_web_server():
+    # Deploy service
+    deploy_service()
+
+    # Start the web server on port 8000
+    app = await web_server()
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", 8000)
+    await site.start()
+
+def main():
+    # Replace 'YOUR_BOT_TOKEN' with your actual bot token
+    updater = Updater("7863196804:AAHLuwSibBQf4denufOtuflKDinvzHgRfDw", use_context=True)
+
+    # Get the dispatcher to register handlers
+    dispatcher = updater.dispatcher
+
+    # Add handlers for commands
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("logs", logs_command))
+
+    # Start the Bot
+    updater.start_polling()
+
+    # Start the web server asynchronously
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(start_web_server())
+
+    # Keep the bot running
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
