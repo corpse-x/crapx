@@ -1,0 +1,16 @@
+# --- For-Bot-Working --------- #
+pyrogram
+TgCrypto
+pyromod==1.5
+python-telegram-bot==13.15
+telegraph==2.2.0
+telethon==1.33.1
+# --- For-Database ------------ #
+pymongo==3.12.3
+dnspython
+# --- For-Web-Response ------- #
+aiohttp
+motor==2.5.1
+Flask==2.2.2
+gunicorn==20.1.0
+werkzeug==2.2.2
