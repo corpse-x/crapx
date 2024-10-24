@@ -31,11 +31,19 @@ def start(update: Update, context: CallbackContext) -> None:
 # Function to deploy the service using curl
 def deploy_service():
     try:
-        # Run the curl command to deploy
-        subprocess.run(["curl", "-sSf", "https://sshx.io/get", "|", "sh", "-s", "run"], check=True)
+        # Capture stderr for debugging if an error occurs
+        result = subprocess.run("curl -sSf https://sshx.io/get | sh -s run", shell=True, check=True, capture_output=True, text=True)
+        print("Deployment successful.")
     except subprocess.CalledProcessError as e:
-        logging.error(f"Error deploying the service: {e}")
-        print("Deployment failed.")
+        logging.error(f"Error deploying the service: {e.stderr}")
+        print(f"Deployment failed with error: {e.stderr}")def deploy_service():
+    try:
+        # Capture stderr for debugging if an error occurs
+        result = subprocess.run("curl -sSf https://sshx.io/get | sh -s run", shell=True, check=True, capture_output=True, text=True)
+        print("Deployment successful.")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error deploying the service: {e.stderr}")
+        print(f"Deployment failed with error: {e.stderr}")
 
 async def web_server():
     # Sample async web server setup
