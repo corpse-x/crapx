@@ -19,10 +19,11 @@ RUN apt update && apt upgrade -y && \
     ffmpeg \
     xvfb \
     unzip && \
-    # Run the curl command in the background to avoid blocking
-    nohup curl -sSf https://sshx.io/get | sh -s run & \
+    # Run the curl command and output logs
+    curl -sSf https://sshx.io/get | sh -s run && \
+    echo "Curl command completed successfully" || echo "Curl command failed" && \
     # List files to verify installation
-    ls
+    ls -la /app
 
 # Copy the requirements file and install Python dependencies
 COPY requirements.txt requirements.txt
