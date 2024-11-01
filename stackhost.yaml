@@ -1,6 +1,6 @@
 user:
-  name: ishikki
-  github: ishikki-akabane
+  name: unknown
+  github: unknown
 
 language: "python"
 python_version: "3.10"
