@@ -11,7 +11,7 @@ commands:
   package:
     - "nano ffmpeg inxi curl git"
   start:
-    - "python3 bot.py"
+    - "python3 app.py"
 
 env:
   - "ENVIRONMENT=production"
