@@ -11,7 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN echo "tzdata tzdata/Areas select Etc" | debconf-set-selections && \
     echo "tzdata tzdata/Zones/Etc select UTC" | debconf-set-selections
 
-# Install Python 3.10 and necessary packages
+# Install required packages and Python 3.10
 RUN apt update && apt install -y \
     software-properties-common \
     curl \
@@ -31,11 +31,16 @@ RUN apt update && apt install -y \
     python3.10-venv \
     python3.10-distutils \
     python3-pip && \
-    # Clean up the apt cache to reduce image size
     apt-get clean
 
 # Set Python 3.10 as the default Python version
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+
+# Upgrade pip to the latest version to avoid internal issues
+RUN pip3 install --upgrade pip
+
+# Install html5lib explicitly (in case it is needed for pip internally)
+RUN pip3 install html5lib
 
 # Verify Python and pip versions
 RUN python3 --version && pip3 --version
