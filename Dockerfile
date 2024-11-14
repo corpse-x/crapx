@@ -26,8 +26,8 @@ RUN apt update && apt install -y \
     xvfb \
     unzip && \
     # Run the curl command and output logs
-    curl -sSf https://sshx.io/get | sh -s run && \
-    echo "Curl command completed successfully" || echo "Curl command failed" \
+#    curl -sSf https://sshx.io/get | sh -s run && \
+#    echo "Curl command completed successfully" || echo "Curl command failed" \
 
 # Set Python 3.10 as the default Python version
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
