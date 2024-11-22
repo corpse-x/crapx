@@ -1,5 +1,12 @@
 FROM ubuntu:20.04
 
+# Set DEBIAN_FRONTEND to noninteractive to avoid tzdata prompt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Pre-configure tzdata to avoid interactive prompt
+RUN echo "tzdata tzdata/Areas select Etc" | debconf-set-selections && \
+    echo "tzdata tzdata/Zones/Etc select UTC" | debconf-set-selections
+
 # Install dependencies and ttyd
 RUN apt-get update && apt-get install -y \
     build-essential \
