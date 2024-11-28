@@ -38,13 +38,13 @@ RUN apt update && apt install -y \
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 
 # Upgrade pip to the latest version to avoid internal issues
-RUN pip3 install --upgrade pip
+#RUN pip3 install --upgrade pip
 
 # Install html5lib explicitly (in case it is needed for pip internally)
-RUN pip3 install html5lib
+#RUN pip3 install html5lib
 
 # Verify Python and pip versions
-RUN python3 --version && pip3 --version
+#RUN python3 --version && pip3 --version
 
 # Copy the requirements file and install Python dependencies
 COPY requirements.txt .
