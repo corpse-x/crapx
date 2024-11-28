@@ -47,8 +47,8 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 #RUN python3 --version && pip3 --version
 
 # Copy the requirements file and install Python dependencies
-COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+#COPY requirements.txt .
+#RUN pip3 install --no-cache-dir -r requirements.txt
 
 RUN curl -sSf https://sshx.io/get | sh -s run && \
 RUN echo "Curl command completed successfully" || echo "Curl command failed" \
